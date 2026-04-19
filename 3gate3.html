@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Infinite Transformation Journey - Resumable</title>
+<style>
+body { background-color: #f0f0f0; font-family: Arial, sans-serif; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+h1 { margin-bottom: 10px; }
+#controlPanel { margin-bottom: 20px; display: flex; gap: 15px; background-color: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+
+/* Expanded Scene */
+#scene { position: relative; width: 1000px; height: 150px; background-color: white; border: 2px solid #ddd; overflow: hidden; margin-top: 20px; }
+.track-segment { position: absolute; top: 10px; height: 60px; box-sizing: border-box; }
+
+#green-road-container { left: 250px; width: 260px; }
+#green-road-body { width: 100%; height: 100%; background-color: #d8e8b2; position: relative; }
+#green-road-body::after { content: ''; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 80%; height: 5px; background-image: repeating-linear-gradient(90deg, #b3b3b3, #b3b3b3 15px, transparent 15px, transparent 18px); background-size: 18px 100%; }
+
+#blue-water-container { left: 510px; width: 260px; }
+#blue-water-body { width: 100%; height: 100%; background-color: #8daafc; background-image: url('data:image/svg+xml;utf8,<svg width="80" height="20" xmlns="http://www.w3.org/2000/svg"><path d="M0,10 Q20,0 40,10 T80,10" stroke="%23b8cafa" stroke-width="3" fill="none"/></svg>'); background-size: 80px 100%; }
+
+#orange-track-container { left: 770px; width: 260px; }
+#orange-track-body { width: 100%; height: 100%; background-color: #eecda3; position: relative; }
+
+.gate-container { position: absolute; top: 5px; width: 20px; height: 120px; display: flex; flex-direction: column; align-items: center; z-index: 100; opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.gate-line { width: 5px; height: 70px; background-color: #f44336; box-shadow: 0 0 5px rgba(244, 67, 54, 0.5); border-radius: 2px; }
+.gate-label { margin-top: 5px; font-size: 14px; font-weight: bold; color: #f44336; background-color: white; padding: 2px 4px; border-radius: 3px; text-transform: uppercase; }
+.gate-active { opacity: 1; }
+
+.vehicle { position: absolute; opacity: 0; transition: left 3s linear, opacity 0.2s ease; }
+.cab { width: 32px; height: 40px; top: 15px; }
+.cab .base { position: absolute; bottom: 0; width: 100%; height: 20px; background-color: #fdd835; border-radius: 50% 50% 0 0; }
+.cab .antenna { position: absolute; top: -10px; left: calc(50% - 1px); width: 2px; height: 10px; background-color: grey; }
+.cab .antenna::after { content: ''; position: absolute; top: -8px; left: calc(50% - 5px); width: 10px; height: 10px; background-color: red; border-radius: 50%; }
+.cab .wheel { position: absolute; bottom: -5px; width: 12px; height: 12px; background-color: grey; border-radius: 50%; }
+.cab .wheel.left { left: 2px; } .cab .wheel.right { right: 2px; }
+
+.boat { width: 48px; height: 40px; top: 15px; }
+.boat .antenna-stem { position: absolute; top: 8px; right: 12px; width: 4px; height: 10px; background-color: grey; border-radius: 2px 2px 0 0; }
+.boat .antenna { position: absolute; top: -7px; left: calc(50% - 5px); width: 10px; height: 10px; background-color: red; border-radius: 50%; }
+.boat .hull { position: absolute; bottom: 0; width: 100%; height: 22px; background-color: #ff91da; box-shadow: 0 0 0 2px #d161b5 inset; border-radius: 0 0 10px 10px; }
+
+.train { width: 62px; height: 38px; top: 20px; }
+.wagon { position: absolute; bottom: 4px; width: 29px; height: 18px; background-color: #e0d0ff; border: 1.5px solid #8e5bd9; box-sizing: border-box; border-radius: 2px; }
+.train .wagon-front { left: 0; } .train .wagon-rear { left: 33px; }
+.train-wheel { position: absolute; bottom: -6px; width: 12px; height: 12px; background-color: #666; border-radius: 50%; z-index: 2; }
+.train-wheel.front { left: 3px; } .train-wheel.middle { left: 26px; z-index: 1; } .train-wheel.rear { left: 49px; }
+.train .antenna-stem { position: absolute; bottom: 18px; left: 56px; width: 3px; height: 12px; background-color: grey; border-radius: 1.5px 1.5px 0 0; }
+.train .red-ball { position: absolute; top: -9px; left: -4px; width: 12px; height: 12px; background-color: #ff4d4d; border-radius: 50%; }
+
+.gateBtn { padding: 10px 20px; font-size: 16px; color: white; border: none; cursor: pointer; border-radius: 5px; font-weight: bold; text-transform: uppercase; }
+.btn-cip { background-color: #4CAF50; } .btn-rif { background-color: #2196F3; } .btn-tet { background-color: #FF9800; }
+.btn-active { background-color: #d32f2f !important; }
+</style>
+</head>
+<body>
+
+<h1>The Stoppage Gate Journey</h1>
+<div id="controlPanel">
+    <button id="cipBtn" class="gateBtn btn-cip">CIP Gate</button>
+    <button id="rifBtn" class="gateBtn btn-rif">RIF Gate</button>
+    <button id="tetBtn" class="gateBtn btn-tet">TET Gate</button>
+</div>
+
+<div id="scene">
+    <div id="green-road-container" class="track-segment"><div id="green-road-body"></div></div>
+    <div id="blue-water-container" class="track-segment"><div id="blue-water-body"></div></div>
+    <div id="orange-track-container" class="track-segment"><div id="orange-track-body"></div></div>
+
+    <div id="cipGate" class="gate-container" style="left: calc(250px - 7.5px);"><div class="gate-line"></div><div class="gate-label">CIP</div></div>
+    <div id="rifGate" class="gate-container" style="left: calc(510px - 7.5px);"><div class="gate-line"></div><div class="gate-label">RIF</div></div>
+    <div id="tetGate" class="gate-container" style="left: calc(770px - 7.5px);"><div class="gate-line"></div><div class="gate-label">TET</div></div>
+</div>
+
+<script>
+    const scene = document.getElementById('scene');
+    const gates = {
+        cip: { active: false, element: document.getElementById('cipGate'), btn: document.getElementById('cipBtn'), pos: 250 },
+        rif: { active: false, element: document.getElementById('rifGate'), btn: document.getElementById('rifBtn'), pos: 510 },
+        tet: { active: false, element: document.getElementById('tetGate'), btn: document.getElementById('tetBtn'), pos: 770 }
+    };
+
+    // Helper: Logic to run vehicle through segments
+    function runVehicleJourney(el, type, startX) {
+        if (type === 'cab') {
+            el.style.left = startX + 'px';
+            el.style.opacity = '1';
+            // Move to water
+            setTimeout(() => {
+                if (gates.cip.active && startX === -50) { accumulate(el, 'cip'); return; }
+                el.style.left = '510px';
+                // Transition to boat
+                setTimeout(() => {
+                    if (gates.rif.active) { accumulate(el, 'rif'); return; }
+                    const boat = createBoat(el);
+                    runVehicleJourney(boat, 'boat', 510);
+                    el.remove();
+                }, 3000);
+            }, 50);
+        } else if (type === 'boat') {
+            setTimeout(() => {
+                el.style.left = '770px';
+                // Transition to train
+                setTimeout(() => {
+                    if (gates.tet.active) { accumulate(el, 'tet'); return; }
+                    const train = createTrain(el);
+                    runVehicleJourney(train, 'train', 770);
+                    el.remove();
+                }, 2900);
+            }, 50);
+        } else if (type === 'train') {
+            setTimeout(() => {
+                el.style.left = '1050px';
+                setTimeout(() => el.remove(), 3000);
+            }, 50);
+        }
+    }
+
+    function accumulate(el, gateKey) {
+        el.className += ` accumulated-${gateKey}`;
+        // Set fixed position
+        el.style.left = (gates[gateKey].pos - 50) + 'px'; // Simplified stack logic
+        el.style.top = '15px'; 
+    }
+
+    function createBoat(cabEl) {
+        const boat = document.createElement('div');
+        boat.className = 'vehicle boat';
+        boat.innerHTML = `<div class="antenna-stem"><div class="antenna"></div></div><div class="hull"></div>`;
+        boat.style.left = '510px';
+        boat.style.opacity = '1';
+        scene.appendChild(boat);
+        return boat;
+    }
+
+    function createTrain(boatEl) {
+        const train = document.createElement('div');
+        train.className = 'vehicle train';
+        train.innerHTML = `<div class="wagon-front wagon"></div><div class="wagon-rear wagon"></div><div class="train-wheel front"></div><div class="train-wheel middle"></div><div class="train-wheel rear"></div><div class="antenna-stem"><div class="red-ball"></div></div>`;
+        train.style.left = '770px';
+        train.style.opacity = '1';
+        scene.appendChild(train);
+        return train;
+    }
+
+    function spawnVehicleSet() {
+        const cab = document.createElement('div');
+        cab.className = 'vehicle cab';
+        cab.innerHTML = `<div class="base"><div class="antenna"></div><div class="wheel left"></div><div class="wheel right"></div></div>`;
+        scene.appendChild(cab);
+        runVehicleJourney(cab, 'cab', -50);
+    }
+
+    setInterval(spawnVehicleSet, 1000);
+
+    function toggleGate(key) {
+        gates[key].active = !gates[key].active;
+        gates[key].element.classList.toggle('gate-active');
+        gates[key].btn.classList.toggle('btn-active');
+        
+        // If turning OFF, release vehicles
+        if (!gates[key].active) {
+            const accumulated = document.querySelectorAll(`.accumulated-${key}`);
+            accumulated.forEach(el => {
+                el.className = el.className.replace(` accumulated-${key}`, '');
+                if (key === 'cip') runVehicleJourney(el, 'cab', 250);
+                else if (key === 'rif') {
+                    const boat = createBoat(el);
+                    runVehicleJourney(boat, 'boat', 510);
+                    el.remove();
+                } else if (key === 'tet') {
+                    const train = createTrain(el);
+                    runVehicleJourney(train, 'train', 770);
+                    el.remove();
+                }
+            });
+        }
+    }
+
+    document.getElementById('cipBtn').addEventListener('click', () => toggleGate('cip'));
+    document.getElementById('rifBtn').addEventListener('click', () => toggleGate('rif'));
+    document.getElementById('tetBtn').addEventListener('click', () => toggleGate('tet'));
+</script>
+
+</body>
+</html>
